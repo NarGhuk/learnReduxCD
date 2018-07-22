@@ -7,29 +7,37 @@ function updateState(state, action) {
     return state;
   }
 }
-class Store{
-  constructor(updateState,state){
+
+class Store {
+  constructor(updateState, state) {
     this._state = state;
     this._updateState = updateState;
-    this.callbacks = [];
+    this._callbacks = [];
   }
-  get state(){
+
+  get state() {
     return this._state
   }
-  update(action){
+
+  update(action) {
     this._state = this._updateState(this._state, action);
+    this._callbacks.forEach((item) => item());
+  }
+
+  subscribe(callback) {
+    this._callbacks.push(callback);
+    return () => this._callbacks = this._callbacks.filter(cb => cb !== callback)
   }
 }
-const store = new Store(updateState,0);
+
+const store = new Store(updateState, 0);
 
 const incrementAtion = {type: 'INCREMENT', amount: 5};
 const decrementAtion = {type: 'DECREMENT', amount: 3};
+const unsubscribe = store.subscribe(() => console.log('State Change1', store.state));
 
 store.update(incrementAtion);
-console.log(store.state);
-
+unsubscribe();
 store.update(decrementAtion);
-console.log(store.state);
-
 store.update({});
-console.log(store.state);
+
